@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+import 'nanopb.proto';
+
+package system;
+
+message DumpMem_call {
+    /* Address to read from. */
+    uint32 address = 1;
+    /* Number of bytes to read */
+    uint32 size = 3;
+}
+
+message DumpMem_reply {
+    /* Dumped data. */
+    bytes mem = 1 [(nanopb).max_size = 1000];
+}
+
+message GetTraceRamAddr_call {}
+
+message GetTraceRamAddr_reply {
+    /* Address of read buffer. */
+    uint32 address = 1;
+    /* Size of buffer. */
+    uint32 size = 3;
+}
+
+message SystemCallset {
+    oneof msg {
+        DumpMem_call dumpmem_call = 1;
+        DumpMem_reply dumpmem_reply = 2;
+        GetTraceRamAddr_call gettraceramaddr_call = 3;
+        GetTraceRamAddr_reply gettraceramaddr_reply = 4;
+    }
+}
