@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+import 'nanopb.proto';
+
+package rtosutils;
+
+/* General thread information. */
+message ThreadInfo {
+    /* Thread name */
+    string name = 1 [(nanopb).max_size = 16];
+    /* Thread id (ptr) */
+    uint32 tid = 2;
+    /* State */
+    uint32 state = 3;
+    /* Priority */
+    int32 prio = 4;
+    /* Runtime current cycle count */
+    uint64 current_cycles = 5;
+    /* Peak cycle count */
+    uint64 peak_cycles = 6;
+    /* Avg cycle count */
+    uint64 avg_cycles = 7;
+    /* Total cycle count */
+    uint64 total_cycles = 8;
+    /* Stack size */
+    uint32 stack_size = 9;
+    /* Unused stack size */
+    uint32 unused_stack = 10;
+}
+
+/* Get information on all rtos tasks. */
+message GetSystemThreads_call {
+    /* Start index */
+    uint32 idx_start = 1;
+}
+message GetSystemThreads_reply {
+    /* Start index */
+    uint32 idx_start = 1;
+    /* Total number of threads. */
+    uint32 num_threads = 2;
+    /* Total system execution cycles. */
+    uint64 total_cycles = 3;
+    /* ThreadInfo array. */
+    repeated ThreadInfo thread_info = 4 [(nanopb).max_count = 20];
+}
+
+message Callset {
+    oneof msg {
+        GetSystemThreads_call  getSystemThreads_call = 1;
+        GetSystemThreads_reply getSystemThreads_reply = 2;
+    }
+}
+

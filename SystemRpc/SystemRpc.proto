@@ -16,20 +16,43 @@ message DumpMem_reply {
     bytes mem = 1 [(nanopb).max_size = 1000];
 }
 
-message GetTraceRamAddr_call {}
+message GetNextTraceRam_call {
+    uint32 max_size = 1;
+}
+message GetNextTraceRam_reply {
+    /* Empty status after read. */
+    bool empty_on_read = 1;
+    /* Dumped data. */
+    bytes data = 2 [(nanopb).max_size = 2000];
+}
 
-message GetTraceRamAddr_reply {
-    /* Address of read buffer. */
-    uint32 address = 1;
-    /* Size of buffer. */
-    uint32 size = 3;
+message EnableTraceRam_call { }
+message EnableTraceRam_reply {
+    bool state = 1;
+}
+
+message DisableTraceRam_call { }
+message DisableTraceRam_reply {
+    bool state = 1;
+}
+
+message GetTraceRamStatus_call { }
+message GetTraceRamStatus_reply {
+    bool state = 1;
+    uint32 count = 2;
 }
 
 message SystemCallset {
     oneof msg {
-        DumpMem_call dumpmem_call = 1;
-        DumpMem_reply dumpmem_reply = 2;
-        GetTraceRamAddr_call gettraceramaddr_call = 3;
-        GetTraceRamAddr_reply gettraceramaddr_reply = 4;
+        DumpMem_call dumpmem_call                       = 1 ;
+        DumpMem_reply dumpmem_reply                     = 2 ;
+        GetTraceRamStatus_call gettraceramstatus_call   = 3 ;
+        GetTraceRamStatus_reply gettraceramstatus_reply = 4 ;
+        EnableTraceRam_call enabletraceram_call         = 5 ;
+        EnableTraceRam_reply enabletraceram_reply       = 6 ;
+        DisableTraceRam_call disabletraceram_call       = 7 ;
+        DisableTraceRam_reply disabletraceram_reply     = 8 ;
+        GetNextTraceRam_call  getnexttraceram_call      = 9 ;
+        GetNextTraceRam_reply getnexttraceram_reply     = 10;
     }
 }
