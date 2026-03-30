@@ -4,6 +4,13 @@ import 'nanopb.proto';
 
 package rtosutils;
 
+enum CallsetVersion{
+    option allow_alias = true;
+    MAJOR = 0;
+    MINOR = 1;
+    PATCH = 0;
+}
+
 /* General thread information. */
 message ThreadInfo {
     /* Thread name */
@@ -50,4 +57,3 @@ message Callset {
         GetSystemThreads_reply getSystemThreads_reply = 2;
     }
 }
-

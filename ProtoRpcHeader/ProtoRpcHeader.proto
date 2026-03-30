@@ -1,4 +1,5 @@
 syntax = "proto3";
+import 'nanopb.proto';
 
 enum StatusEnum {
     RPC_SUCCESS = 0;
@@ -8,9 +9,20 @@ enum StatusEnum {
     RPC_HANDLER_ERROR = 4;
 }
 
+message CallsetInfo {
+    uint32 id = 1;
+    uint32 ver_major = 2;
+    uint32 ver_minor = 3;
+    uint32 ver_patch = 4;
+    string name = 5 [(nanopb).max_size = 16];
+}
+
 message ProtoRpcHeader {
     uint32 seqn = 1;
     bool no_reply = 2;
     StatusEnum status = 3;
     uint32 which_callset = 4;
+    bool callset_query = 5;
+    optional uint32 num_callsets = 6;
+    repeated CallsetInfo callset_info = 7 [(nanopb).max_count = 16];
 }
