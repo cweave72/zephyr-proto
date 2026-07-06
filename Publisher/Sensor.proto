@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import 'nanopb.proto';
+
+package sensor;
+
+message TempSensor {
+    /* Temperature, deg F. */
+    int32 temp_deg = 1;
+    /* Temperature fraction length. */
+    uint32 temp_deg_fl = 2;
+    /* Humidity, %. */
+    optional int32 humid = 3;
+    /* Humidity fraction length. */
+    optional uint32 humid_fl = 4;
+}
