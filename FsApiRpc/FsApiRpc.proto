@@ -7,7 +7,7 @@ package fsapi;
 enum CallsetVersion {
     option allow_alias = true;
     MAJOR = 0;
-    MINOR = 2;
+    MINOR = 3;
     PATCH = 0;
 }
 
@@ -44,8 +44,19 @@ message FileInfo {
 /* All replies carry 'result': 0 or a positive value on success, or a negative
    errno value on failure. */
 
-/* Get the file system volume statistics. */
-message GetFsInfo_call { }
+/* List the mount points. */
+message ListMounts_call { }
+message ListMounts_reply {
+    /* Number of mount points, or a negative errno value. */
+    sint32 result = 1;
+    repeated string mount_points = 2 [(nanopb).max_size = 32, (nanopb).max_count = 4];
+}
+
+/* Get the volume statistics of the file system which holds a path. */
+message GetFsInfo_call {
+    /* A mount point or any path on the file system. */
+    string path = 1 [(nanopb).max_size = 128];
+}
 message GetFsInfo_reply {
     sint32 result = 1;
     string mount_point = 2 [(nanopb).max_size = 32];
@@ -169,9 +180,12 @@ message Mkdir_reply {
     sint32 result = 1;
 }
 
-/* Format the file system and mount it again. All data is lost. All open
-   handles are closed. */
-message Format_call { }
+/* Format one file system and mount it again. All its data is lost. The open
+   handles on that file system are closed. */
+message Format_call {
+    /* The mount point, for example "/flash". */
+    string path = 1 [(nanopb).max_size = 32];
+}
 message Format_reply {
     sint32 result = 1;
 }
@@ -206,5 +220,7 @@ message Callset {
         Mkdir_reply mkdir_reply         = 26;
         Format_call format_call         = 27;
         Format_reply format_reply       = 28;
+        ListMounts_call listmounts_call = 29;
+        ListMounts_reply listmounts_reply = 30;
     }
 }
