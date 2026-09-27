@@ -1,0 +1,210 @@
+syntax = "proto3";
+
+import 'nanopb.proto';
+
+package fsapi;
+
+enum CallsetVersion {
+    option allow_alias = true;
+    MAJOR = 0;
+    MINOR = 2;
+    PATCH = 0;
+}
+
+/* Open flag bits. The handler maps each bit to a Zephyr FS_O_* flag. */
+enum OpenFlags {
+    OPEN_NONE   = 0;
+    OPEN_READ   = 1;
+    OPEN_WRITE  = 2;
+    OPEN_CREATE = 4;
+    OPEN_APPEND = 8;
+    OPEN_TRUNC  = 16;
+}
+
+/* Seek origins. */
+enum Whence {
+    SEEK_SET = 0;
+    SEEK_CUR = 1;
+    SEEK_END = 2;
+}
+
+/* Directory entry types. */
+enum EntryType {
+    ENTRY_FILE = 0;
+    ENTRY_DIR  = 1;
+}
+
+/* Directory entry. */
+message FileInfo {
+    EntryType type = 1;
+    uint32 size = 2;
+    string name = 3 [(nanopb).max_size = 64];
+}
+
+/* All replies carry 'result': 0 or a positive value on success, or a negative
+   errno value on failure. */
+
+/* Get the file system volume statistics. */
+message GetFsInfo_call { }
+message GetFsInfo_reply {
+    sint32 result = 1;
+    string mount_point = 2 [(nanopb).max_size = 32];
+    uint32 block_size = 3;
+    uint32 total_blocks = 4;
+    uint32 free_blocks = 5;
+}
+
+/* Get the type and size of a path. */
+message Stat_call {
+    string path = 1 [(nanopb).max_size = 128];
+}
+message Stat_reply {
+    sint32 result = 1;
+    FileInfo info = 2;
+}
+
+/* List one page of directory entries. No handle is kept open. */
+message ListDir_call {
+    string path = 1 [(nanopb).max_size = 128];
+    uint32 start_idx = 2;
+}
+message ListDir_reply {
+    /* Number of entries in this page, or a negative errno value. */
+    sint32 result = 1;
+    /* Total number of entries in the directory. */
+    uint32 total = 2;
+    repeated FileInfo entries = 3 [(nanopb).max_count = 8];
+}
+
+/* Open a file. The result is the file handle. */
+message Open_call {
+    string path = 1 [(nanopb).max_size = 128];
+    /* OR of OpenFlags bits. */
+    uint32 flags = 2;
+}
+message Open_reply {
+    sint32 result = 1;
+}
+
+/* Close a file handle. */
+message Close_call {
+    sint32 fd = 1;
+}
+message Close_reply {
+    sint32 result = 1;
+}
+
+/* Close all file and directory handles. The result is the number closed. */
+message CloseAll_call { }
+message CloseAll_reply {
+    sint32 result = 1;
+}
+
+/* Read from a file handle. The result is the number of bytes read. */
+message Read_call {
+    sint32 fd = 1;
+    /* Size to read. Maximum 1024. */
+    uint32 size = 2;
+    /* If set, seek to offset (from the start) before the read. */
+    bool use_offset = 3;
+    uint32 offset = 4;
+}
+message Read_reply {
+    sint32 result = 1;
+    bytes data = 2 [(nanopb).max_size = 1024];
+}
+
+/* Write to a file handle. The result is the number of bytes written. */
+message Write_call {
+    sint32 fd = 1;
+    bytes data = 2 [(nanopb).max_size = 1024];
+    /* If set, seek to offset (from the start) before the write. */
+    bool use_offset = 3;
+    uint32 offset = 4;
+}
+message Write_reply {
+    sint32 result = 1;
+}
+
+/* Move the position of a file handle. The result is the new position. */
+message Seek_call {
+    sint32 fd = 1;
+    sint32 offset = 2;
+    Whence whence = 3;
+}
+message Seek_reply {
+    sint32 result = 1;
+}
+
+/* Get the size of an open file. The result is the size. */
+message Size_call {
+    sint32 fd = 1;
+}
+message Size_reply {
+    sint32 result = 1;
+}
+
+/* Remove a file or an empty directory. */
+message Remove_call {
+    string path = 1 [(nanopb).max_size = 128];
+}
+message Remove_reply {
+    sint32 result = 1;
+}
+
+/* Rename or move a file or directory. */
+message Rename_call {
+    string src = 1 [(nanopb).max_size = 128];
+    string dst = 2 [(nanopb).max_size = 128];
+}
+message Rename_reply {
+    sint32 result = 1;
+}
+
+/* Create a directory. */
+message Mkdir_call {
+    string path = 1 [(nanopb).max_size = 128];
+}
+message Mkdir_reply {
+    sint32 result = 1;
+}
+
+/* Format the file system and mount it again. All data is lost. All open
+   handles are closed. */
+message Format_call { }
+message Format_reply {
+    sint32 result = 1;
+}
+
+message Callset {
+    oneof msg {
+        GetFsInfo_call getfsinfo_call   = 1;
+        GetFsInfo_reply getfsinfo_reply = 2;
+        Stat_call stat_call             = 3;
+        Stat_reply stat_reply           = 4;
+        ListDir_call listdir_call       = 5;
+        ListDir_reply listdir_reply     = 6;
+        Open_call open_call             = 7;
+        Open_reply open_reply           = 8;
+        Close_call close_call           = 9;
+        Close_reply close_reply         = 10;
+        CloseAll_call closeall_call     = 11;
+        CloseAll_reply closeall_reply   = 12;
+        Read_call read_call             = 13;
+        Read_reply read_reply           = 14;
+        Write_call write_call           = 15;
+        Write_reply write_reply         = 16;
+        Seek_call seek_call             = 17;
+        Seek_reply seek_reply           = 18;
+        Size_call size_call             = 19;
+        Size_reply size_reply           = 20;
+        Remove_call remove_call         = 21;
+        Remove_reply remove_reply       = 22;
+        Rename_call rename_call         = 23;
+        Rename_reply rename_reply       = 24;
+        Mkdir_call mkdir_call           = 25;
+        Mkdir_reply mkdir_reply         = 26;
+        Format_call format_call         = 27;
+        Format_reply format_reply       = 28;
+    }
+}
